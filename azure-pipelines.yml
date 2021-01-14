@@ -1,19 +1,35 @@
-# Starter pipeline
-# Start with a minimal pipeline that you can customize to build and deploy your code.
-# Add steps that build, run tests, deploy, and more:
-# https://aka.ms/yaml
-
 trigger:
 - main
+  
+# pr:
+#   branches:
+#     include:
+#       - dev
 
-pool:
-  vmImage: 'ubuntu-latest'
+resources:
+- repo: self
 
-steps:
-- script: echo Hello, world!
-  displayName: 'Run a one-line script'
+variables:
+  tag: '$(Build.BuildId)'
 
-- script: |
-    echo Add other tasks to build, test, and deploy your project.
-    echo See https://aka.ms/yaml
-  displayName: 'Run a multi-line script'
+stages:
+- stage: Build
+  displayName: Build image
+  jobs:  
+  - job: Build
+    displayName: Build
+    pool:
+      vmImage: 'ubuntu-latest'
+
+- stage: test
+  displayName: Test Python Code
+  dependsOn:
+  - build
+  jobs:
+  - job: test_python_solution
+    displayName: test python solution
+    steps:
+    - task: UsePythonVersion@0
+      inputs:
+          versionSpec: '3.6'
+    - script: python src/test_test1.py
